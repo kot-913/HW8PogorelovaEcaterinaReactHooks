@@ -1,19 +1,28 @@
-import React, { Component } from 'react';
-import { StyledLabel, StyledInput } from './styles';
+import React, { useCallback } from "react";
+import { StyledInput, StyledLabel } from "./styles";
 
-class Input extends Component {
-    onChange = ({ currentTarget: { value } }) => this.props.onChange(value);
+const Input = ({
+  value,
+  placeholder,
+  label,
+  disabled = false,
+  type = "text",
+  onChange,
+}) => {
+  const onChangeHandler = useCallback(
+    ({ currentTarget: { value } }) => onChange(value),
+    [value]
+  );
 
-    render() {
-        const { value, placeholder, label, disabled = false, type = 'text' } = this.props;
-
-        return (
-            <StyledLabel>
-                {label && <span>{label}</span>}
-                <StyledInput autoFocus={true} {...{ value, placeholder, type, disabled, onChange: this.onChange }} />
-            </StyledLabel>
-        );
-    }
-}
+  return (
+    <StyledLabel>
+      {label && <span>{label}</span>}
+      <StyledInput
+        autoFocus={true}
+        {...{ value, placeholder, type, disabled, onChange: onChangeHandler }}
+      />
+    </StyledLabel>
+  );
+};
 
 export default Input;

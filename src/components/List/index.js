@@ -1,62 +1,50 @@
-import React, { Component, createRef } from 'react';
-import { TaskListConsumer } from 'context/taskList.context';
-import Task from 'components/Task';
+import Task from "components/Task";
+import { TaskListConsumer } from "context/taskList.context";
+import React, { useEffect, useRef, useState } from "react";
+import { StyledHeight, StyledList } from "./styles";
 
-import { StyledHeight, StyledList } from './styles';
+const List = (props) => {
+  const listRef = useRef();
+  const [height, setHeight] = useState(0);
 
-class List extends Component {
-    constructor(props) {
-        super(props);
+  useEffect(() => {
+    const newHeight = listRef.current && listRef.current.offsetHeight;
 
-        this.listRef = createRef();
-
-        this.state = {
-            height: 0,
-        };
+    if (newHeight && newHeight !== height) {
+      setHeight(newHeight);
     }
+  }, []);
 
-    componentDidUpdate() {
-        const height = this.listRef.current && this.listRef.current.offsetHeight;
+  useEffect(() => {
+    const newHeight = listRef.current && listRef.current.offsetHeight;
 
-        if (height && this.state.height !== height) {
-            this.setState({ height });
-        }
+    if (newHeight && newHeight !== height) {
+      setHeight(newHeight);
     }
+  }, [props.taskList]);
 
-    componentDidMount() {
-        const height = this.listRef.current && this.listRef.current.offsetHeight;
+  const { taskList = [] } = props;
 
-        if (height && this.state.height !== height) {
-            this.setState({ height });
-        }
-    }
+  return (
+    <StyledList ref={listRef}>
+      {taskList.map(({ text, id }) => (
+        <Task
+          key={id}
+          onDelete={props.removeTask}
+          onSave={props.addTask}
+          id={id}
+        >
+          {text}
+        </Task>
+      ))}
 
-    render() {
-        const { taskList = [] } = this.props;
-
-        return (
-            <StyledList ref={this.listRef}>
-                {taskList.map(({ text, id }) => (
-                    <Task 
-                        key={id} 
-                        onDelete={this.props.removeTask}
-                        onSave={this.props.addTask}
-                        id={id}
-                    >
-                        {text}
-                    </Task>
-                ))}
-
-                <StyledHeight>
-                    List height: {this.state.height} px
-                </StyledHeight>
-            </StyledList>
-        );
-    }
-}
+      <StyledHeight>List height: {height} px</StyledHeight>
+    </StyledList>
+  );
+};
 
 export default (componentProps) => (
-    <TaskListConsumer>
-        {(props) => <List {...props} {...componentProps} />}
-    </TaskListConsumer>
+  <TaskListConsumer>
+    {(props) => <List {...props} {...componentProps} />}
+  </TaskListConsumer>
 );

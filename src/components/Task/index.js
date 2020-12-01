@@ -1,60 +1,78 @@
-import React, { Component, Fragment } from 'react';
-import Input from 'components/Input';
+import Input from "components/Input";
+import React, { Fragment, useReducer } from "react";
+import {
+  StyledButton,
+  StyledButtonsWrapper,
+  StyledDelete,
+  StyledEdit,
+  StyledEditForm,
+  StyledTask,
+  StyledText,
+} from "./styles";
 
-import { StyledEdit, StyledTask, StyledDelete, StyledText, StyledButton, StyledEditForm, StyledButtonsWrapper } from './styles';
+const initialState = { editValue: "", isEdit: false };
 
-class Task extends Component {
-    state = {
-        editValue: '',
-        isEdit: false,
-    };
-
-    onEditChange = (value) => this.setState({ editValue: value });
-
-    onEditPress = () => this.setState({ editValue: this.props.children, isEdit: true });
-
-    onSaveEdit = (e) => {
-        e.preventDefault();
-
-        const { editValue } = this.state;
-
-        if (editValue) {
-            const { id } = this.props;
-
-            this.props.onSave({ id, text: this.state.editValue });
-            this.setState({ editValue: '', isEdit: false });
-        }
-    };
-
-    render() {
-        const { onDelete, children, id } = this.props;
-
-        return (
-            <StyledTask>
-                {this.state.isEdit ? (
-                    <StyledEditForm onSubmit={this.onSaveEdit} onBlur={this.onSaveEdit} >
-                        <Input 
-                            onChange={this.onEditChange} value={this.state.editValue}
-                            placeholder="Task must contain title"
-                        />
-                    </StyledEditForm>
-                ) : (
-                    <Fragment>
-                        <StyledText>{children}</StyledText>
-
-                        <StyledButtonsWrapper>
-                            <StyledButton onClick={this.onEditPress}>
-                                <StyledEdit />
-                            </StyledButton>
-                            <StyledButton onClick={() => onDelete(id)}>
-                                <StyledDelete />
-                            </StyledButton>
-                        </StyledButtonsWrapper>
-                    </Fragment>
-                )}
-            </StyledTask>
-        );
+function tasksReducer(state, action) {
+  switch (action.type) {
+    case "EDIT_VALUE": {
+      return { ...state, editValue: action.value };
     }
+    case "TOGGLE_ISEDIT": {
+      return { ...state, isEdit: action.value };
+    }
+
+    default:
+      return state;
+  }
 }
+
+const Task = ({ id, children, onDelete, onSave }) => {
+  const [state, dispatch] = useReducer(tasksReducer, initialState);
+  const { editValue, isEdit } = state;
+
+  const onEditChange = (value) => dispatch({ type: "EDIT_VALUE", value });
+
+  const onEditPress = () => {
+    dispatch({ type: "TOGGLE_ISEDIT", value: true });
+    dispatch({ type: "EDIT_VALUE", value: children });
+  };
+
+  const onSaveEdit = (e) => {
+    e.preventDefault();
+
+    if (editValue) {
+      onSave({ id, text: editValue });
+      dispatch({ type: "EDIT_VALUE", value: "" });
+      dispatch({ type: "TOGGLE_ISEDIT", value: false });
+    }
+  };
+
+  return (
+    <StyledTask>
+      {isEdit ? (
+        <StyledEditForm onSubmit={onSaveEdit} onBlur={onSaveEdit}>
+          <Input
+            onChange={onEditChange}
+            value={editValue}
+            placeholder="Task must contain title"
+          />
+        </StyledEditForm>
+      ) : (
+        <Fragment>
+          <StyledText>{children}</StyledText>
+
+          <StyledButtonsWrapper>
+            <StyledButton onClick={onEditPress}>
+              <StyledEdit />
+            </StyledButton>
+            <StyledButton onClick={() => onDelete(id)}>
+              <StyledDelete />
+            </StyledButton>
+          </StyledButtonsWrapper>
+        </Fragment>
+      )}
+    </StyledTask>
+  );
+};
 
 export default Task;
