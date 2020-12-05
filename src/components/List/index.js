@@ -1,9 +1,9 @@
 import Task from "components/Task";
-import { TaskListConsumer } from "context/taskList.context";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
+import { TaskListContext } from "../../context/taskList.context";
 import { StyledHeight, StyledList } from "./styles";
 
-const List = (props) => {
+function useHeight(list) {
   const listRef = useRef();
   const [height, setHeight] = useState(0);
 
@@ -13,25 +13,22 @@ const List = (props) => {
     if (newHeight && newHeight !== height) {
       setHeight(newHeight);
     }
-  }, []);
+  }, [list]);
+  return { height, listRef };
+}
 
-  useEffect(() => {
-    const newHeight = listRef.current && listRef.current.offsetHeight;
-
-    if (newHeight && newHeight !== height) {
-      setHeight(newHeight);
-    }
-  }, [props.taskList]);
-
-  const { taskList = [] } = props;
+const List = () => {
+  const { taskList, addTask, removeTask } = useContext(TaskListContext);
+  const { height, listRef } = useHeight(taskList);
 
   return (
     <StyledList ref={listRef}>
-      {taskList.map(({ text, id }) => (
+      {taskList.map(({ text, id, isCompleted }) => (
         <Task
           key={id}
-          onDelete={props.removeTask}
-          onSave={props.addTask}
+          onDelete={removeTask}
+          onSave={addTask}
+          isCompleted={isCompleted}
           id={id}
         >
           {text}
@@ -43,8 +40,4 @@ const List = (props) => {
   );
 };
 
-export default (componentProps) => (
-  <TaskListConsumer>
-    {(props) => <List {...props} {...componentProps} />}
-  </TaskListConsumer>
-);
+export default List;

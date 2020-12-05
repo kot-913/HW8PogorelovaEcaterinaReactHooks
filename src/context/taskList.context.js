@@ -5,7 +5,7 @@ import { saveState } from "../utils/localStorage";
 const TaskListContext = createContext({});
 export { TaskListContext };
 
-export const { Provider, Consumer: TaskListConsumer } = TaskListContext;
+export const { Provider } = TaskListContext;
 
 class TaskListProvider extends Component {
   state = {
@@ -23,7 +23,7 @@ class TaskListProvider extends Component {
       };
   }
 
-  addTask = ({ text, id }) => {
+  addTask = ({ text, id, isCompleted }) => {
     let task = id
       ? this.state.list.find(({ id: taskId }) => taskId === id) || { id: v4() }
       : { id: v4() };
@@ -31,13 +31,18 @@ class TaskListProvider extends Component {
     task = {
       ...task,
       text,
+      isCompleted,
     };
 
     const state = [task, ...this.state.list.filter(({ id }) => id !== task.id)];
 
-    saveState(state);
+    const activeTasks = state.filter((task) => task.isCompleted === false);
+    const completedTasks = state.filter((task) => task.isCompleted === true);
+    const newState = [...activeTasks, ...completedTasks];
 
-    return this.setState({ list: state });
+    saveState(newState);
+
+    return this.setState({ list: newState });
   };
 
   removeTask = (taskId) => {

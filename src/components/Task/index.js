@@ -1,5 +1,5 @@
 import Input from "components/Input";
-import React, { Fragment, useReducer } from "react";
+import React, { Fragment, useState } from "react";
 import {
   StyledButton,
   StyledButtonsWrapper,
@@ -10,41 +10,33 @@ import {
   StyledText,
 } from "./styles";
 
-const initialState = { editValue: "", isEdit: false };
-
-function tasksReducer(state, action) {
-  switch (action.type) {
-    case "EDIT_VALUE": {
-      return { ...state, editValue: action.value };
-    }
-    case "TOGGLE_ISEDIT": {
-      return { ...state, isEdit: action.value };
-    }
-
-    default:
-      return state;
-  }
-}
-
-const Task = ({ id, children, onDelete, onSave }) => {
-  const [state, dispatch] = useReducer(tasksReducer, initialState);
-  const { editValue, isEdit } = state;
-
-  const onEditChange = (value) => dispatch({ type: "EDIT_VALUE", value });
+const Task = ({ id, children, onDelete, onSave, isCompleted }) => {
+  //   const [state, dispatch] = useReducer(tasksReducer, initialState);
+  const [editValue, setEditValue] = useState("");
+  const [isEdit, setIsIsEdit] = useState(false);
 
   const onEditPress = () => {
-    dispatch({ type: "TOGGLE_ISEDIT", value: true });
-    dispatch({ type: "EDIT_VALUE", value: children });
+    setIsIsEdit(true);
+    setEditValue(children);
   };
 
   const onSaveEdit = (e) => {
     e.preventDefault();
 
+    // const isTaskExists = useMemo(
+    // 	() => taskList.some(({ text }) => inputValue === text),
+    // 	[taskList, inputValue]
+    //   );
+
     if (editValue) {
-      onSave({ id, text: editValue });
-      dispatch({ type: "EDIT_VALUE", value: "" });
-      dispatch({ type: "TOGGLE_ISEDIT", value: false });
+      onSave({ id, text: editValue, isCompleted });
+      setIsIsEdit(false);
+      setEditValue("");
     }
+  };
+
+  const onChecked = () => {
+    onSave({ id, text: children, isCompleted: !isCompleted });
   };
 
   return (
@@ -52,15 +44,19 @@ const Task = ({ id, children, onDelete, onSave }) => {
       {isEdit ? (
         <StyledEditForm onSubmit={onSaveEdit} onBlur={onSaveEdit}>
           <Input
-            onChange={onEditChange}
+            onChange={setEditValue}
             value={editValue}
             placeholder="Task must contain title"
           />
         </StyledEditForm>
       ) : (
         <Fragment>
-          <StyledText>{children}</StyledText>
-
+          <input type="checkbox" checked={isCompleted} onChange={onChecked} />
+          <StyledText
+            style={{ textDecoration: isCompleted ? "line-through" : "none" }}
+          >
+            {children}
+          </StyledText>
           <StyledButtonsWrapper>
             <StyledButton onClick={onEditPress}>
               <StyledEdit />
