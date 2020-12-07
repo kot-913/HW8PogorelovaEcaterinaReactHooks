@@ -1,7 +1,9 @@
 export const saveState = (value) => {
-    localStorage.setItem('tasks', JSON.stringify(value));
+  localStorage.setItem("tasks", JSON.stringify(value));
 };
 
 export const getState = () => {
-    return JSON.parse(localStorage.getItem('tasks'));
+  const tasks = JSON.parse(localStorage.getItem("tasks"));
+  if (tasks) return tasks;
+  return [];
 };

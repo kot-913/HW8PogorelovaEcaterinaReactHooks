@@ -11,25 +11,27 @@ import {
   StyledText,
 } from "./styles";
 
-const Task = ({ id, children, onSave, isCompleted }) => {
+const Task = ({ id, children, isCompleted }) => {
   const [editValue, setEditValue] = useState("");
   const [isEdit, setIsIsEdit] = useState(false);
-  const { taskList, removeTask, addTask } = useContext(TaskListContext);
+  const { taskList, removeTask, addTask, checkTask } = useContext(
+    TaskListContext
+  );
 
   const onEditPress = () => {
     setIsIsEdit(true);
     setEditValue(children);
   };
 
-  let isTaskExists = useMemo(
-    () => taskList.some((item) => editValue === item), //why?
+  let taskAlreadyExists = useMemo(
+    () => taskList.some((item) => editValue === item.text),
     [taskList, editValue]
   );
 
   const onSaveEdit = (e) => {
     e.preventDefault();
 
-    if (editValue || isTaskExists) {
+    if (editValue && !taskAlreadyExists) {
       addTask({ id, text: editValue, isCompleted });
       setIsIsEdit(false);
       setEditValue("");
@@ -37,7 +39,7 @@ const Task = ({ id, children, onSave, isCompleted }) => {
   };
 
   const onChecked = () => {
-    addTask({ id, text: children, isCompleted: !isCompleted });
+    checkTask({ task: { id, text: children, isCompleted: !isCompleted } });
   };
 
   return (

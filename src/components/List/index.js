@@ -1,5 +1,5 @@
 import Task from "components/Task";
-import React, { useContext, useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useRef, useState, useMemo } from "react";
 import { TaskListContext } from "../../context/taskList.context";
 import { StyledHeight, StyledList } from "./styles";
 
@@ -21,14 +21,17 @@ const List = () => {
   const { taskList } = useContext(TaskListContext);
   const { height, listRef } = useHeight(taskList);
 
+  const taskListMemo = useMemo(() => {
+    return taskList.map(({ text, id, isCompleted }) => (
+      <Task key={id} id={id} isCompleted={isCompleted}>
+        {text}
+      </Task>
+    ));
+  }, [taskList]);
+
   return (
     <StyledList ref={listRef}>
-      {taskList.map(({ text, id, isCompleted }) => (
-        <Task key={id} isCompleted={isCompleted} id={id}>
-          {text}
-        </Task>
-      ))}
-
+      {taskListMemo}
       <StyledHeight>List height: {height} px</StyledHeight>
     </StyledList>
   );
