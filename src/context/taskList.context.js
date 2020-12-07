@@ -1,74 +1,74 @@
-import React, { Component, createContext } from "react";
-import { v4 } from "uuid";
-import { saveState } from "../utils/localStorage";
+import React, { createContext, useReducer } from "react";
+import { getState, saveState } from "../utils/localStorage";
 
 const TaskListContext = createContext({});
 export { TaskListContext };
 
 export const { Provider } = TaskListContext;
 
-class TaskListProvider extends Component {
-  state = {
-    list: [],
-  };
+const ACTIONS = {
+  ADD_TASK: "ADD_TASK",
+  EDIT_TASK: "EDIT_TASK",
+  REMOVE_TASK: "REMOVE_TASK",
+};
 
-  constructor(props) {
-    super(props);
+function reducer(tasks, action) {
+  switch (action.type) {
+    case ACTIONS.ADD_TASK:
+      let id = id ? action.payload.id : Date.now();
 
-    const { defaultState } = props;
-
-    if (Array.isArray(defaultState))
-      this.state = {
-        list: [...defaultState],
+      const task = {
+        text: action.payload.text,
+        id,
+        isCompleted: action.payload.isCompleted,
       };
-  }
 
-  addTask = ({ text, id, isCompleted }) => {
-    let task = id
-      ? this.state.list.find(({ id: taskId }) => taskId === id) || { id: v4() }
-      : { id: v4() };
+      const newTasks = [task, ...tasks.filter(({ id }) => id !== task.id)];
 
-    task = {
-      ...task,
-      text,
-      isCompleted,
-    };
+      const activeTasks = newTasks.filter((task) => task.isCompleted === false);
+      const completedTasks = newTasks.filter(
+        (task) => task.isCompleted === true
+      );
+      const newState = [...activeTasks, ...completedTasks];
+      saveState(newState);
+      return newState;
 
-    const state = [task, ...this.state.list.filter(({ id }) => id !== task.id)];
+    case ACTIONS.EDIT_TASK:
+      break;
+    case ACTIONS.REMOVE_TASK:
+      const newestTasks = tasks.filter((task) => task.id !== action.payload.id);
+      console.log("id", tasks);
+      saveState(newestTasks);
+      return newestTasks;
 
-    const activeTasks = state.filter((task) => task.isCompleted === false);
-    const completedTasks = state.filter((task) => task.isCompleted === true);
-    const newState = [...activeTasks, ...completedTasks];
-
-    saveState(newState);
-
-    return this.setState({ list: newState });
-  };
-
-  removeTask = (taskId) => {
-    const state = [...this.state.list.filter(({ id }) => id !== taskId)];
-
-    saveState(state);
-
-    return this.setState({ list: state });
-  };
-
-  render() {
-    const { addTask, removeTask } = this;
-    const { children } = this.props;
-
-    return (
-      <Provider
-        value={{
-          taskList: this.state.list,
-          addTask,
-          removeTask,
-        }}
-      >
-        {children}
-      </Provider>
-    );
+    default:
+      return tasks;
   }
 }
 
-export default TaskListProvider;
+export default function TaskListProvider(props) {
+  const [tasks, dispatch] = useReducer(reducer, getState());
+
+  const addTask = ({ text, id, isCompleted }) => {
+    dispatch({
+      type: ACTIONS.ADD_TASK,
+      payload: { text, id, isCompleted },
+    });
+  };
+
+  const removeTask = (id) => {
+    dispatch({ type: ACTIONS.REMOVE_TASK, payload: { id } });
+  };
+
+  return (
+    <Provider
+      value={{
+        taskList: tasks,
+        addTask,
+        removeTask,
+      }}
+    >
+      {props.children}
+    </Provider>
+  );
+}

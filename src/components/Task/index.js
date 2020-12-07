@@ -1,5 +1,6 @@
 import Input from "components/Input";
-import React, { Fragment, useState } from "react";
+import React, { Fragment, useContext, useMemo, useState } from "react";
+import { TaskListContext } from "../../context/taskList.context";
 import {
   StyledButton,
   StyledButtonsWrapper,
@@ -10,33 +11,33 @@ import {
   StyledText,
 } from "./styles";
 
-const Task = ({ id, children, onDelete, onSave, isCompleted }) => {
-  //   const [state, dispatch] = useReducer(tasksReducer, initialState);
+const Task = ({ id, children, onSave, isCompleted }) => {
   const [editValue, setEditValue] = useState("");
   const [isEdit, setIsIsEdit] = useState(false);
+  const { taskList, removeTask, addTask } = useContext(TaskListContext);
 
   const onEditPress = () => {
     setIsIsEdit(true);
     setEditValue(children);
   };
 
+  let isTaskExists = useMemo(
+    () => taskList.some((item) => editValue === item), //why?
+    [taskList, editValue]
+  );
+
   const onSaveEdit = (e) => {
     e.preventDefault();
 
-    // const isTaskExists = useMemo(
-    // 	() => taskList.some(({ text }) => inputValue === text),
-    // 	[taskList, inputValue]
-    //   );
-
-    if (editValue) {
-      onSave({ id, text: editValue, isCompleted });
+    if (editValue || isTaskExists) {
+      addTask({ id, text: editValue, isCompleted });
       setIsIsEdit(false);
       setEditValue("");
     }
   };
 
   const onChecked = () => {
-    onSave({ id, text: children, isCompleted: !isCompleted });
+    addTask({ id, text: children, isCompleted: !isCompleted });
   };
 
   return (
@@ -61,7 +62,7 @@ const Task = ({ id, children, onDelete, onSave, isCompleted }) => {
             <StyledButton onClick={onEditPress}>
               <StyledEdit />
             </StyledButton>
-            <StyledButton onClick={() => onDelete(id)}>
+            <StyledButton onClick={() => removeTask(id)}>
               <StyledDelete />
             </StyledButton>
           </StyledButtonsWrapper>

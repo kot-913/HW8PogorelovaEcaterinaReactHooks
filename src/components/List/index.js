@@ -18,19 +18,13 @@ function useHeight(list) {
 }
 
 const List = () => {
-  const { taskList, addTask, removeTask } = useContext(TaskListContext);
+  const { taskList } = useContext(TaskListContext);
   const { height, listRef } = useHeight(taskList);
 
   return (
     <StyledList ref={listRef}>
       {taskList.map(({ text, id, isCompleted }) => (
-        <Task
-          key={id}
-          onDelete={removeTask}
-          onSave={addTask}
-          isCompleted={isCompleted}
-          id={id}
-        >
+        <Task key={id} isCompleted={isCompleted} id={id}>
           {text}
         </Task>
       ))}
