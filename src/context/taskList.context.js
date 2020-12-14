@@ -36,7 +36,7 @@ function reducer(tasks, action) {
       };
       tasks = tasks
         .map((task) => (task.id === action.payload.id ? newTask : task))
-        .sort((a, b) => (a.isCompleted - b.isCompleted ? 1 : 0));
+        .sort((a, b) => a.isCompleted - b.isCompleted);
 
       saveState(tasks);
       return tasks;
