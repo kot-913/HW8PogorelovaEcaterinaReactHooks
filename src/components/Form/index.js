@@ -5,16 +5,14 @@ import { StyledAddButton, StyledForm } from "./styles";
 
 const Form = () => {
   const [inputValue, setInputValue] = React.useState("");
-  const context = useContext(TaskListContext);
-  const { taskList, addTask: onAddTask } = context;
-
+  const { taskList, addTask: onAddTask } = useContext(TaskListContext);
   const onChange = (value) => setInputValue(value);
 
   const addTask = (e) => {
     e.preventDefault();
 
     if (inputValue) {
-      onAddTask({ text: inputValue });
+      onAddTask({ text: inputValue, isCompleted: false });
       setInputValue("");
     }
   };

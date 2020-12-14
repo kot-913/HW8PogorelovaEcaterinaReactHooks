@@ -11,7 +11,7 @@ const Input = ({
 }) => {
   const onChangeHandler = useCallback(
     ({ currentTarget: { value } }) => onChange(value),
-    [value]
+    []
   );
 
   return (

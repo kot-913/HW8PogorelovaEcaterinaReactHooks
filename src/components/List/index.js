@@ -1,9 +1,9 @@
 import Task from "components/Task";
-import { TaskListConsumer } from "context/taskList.context";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useRef, useState, useMemo } from "react";
+import { TaskListContext } from "../../context/taskList.context";
 import { StyledHeight, StyledList } from "./styles";
 
-const List = (props) => {
+function useHeight(list) {
   const listRef = useRef();
   const [height, setHeight] = useState(0);
 
@@ -13,38 +13,28 @@ const List = (props) => {
     if (newHeight && newHeight !== height) {
       setHeight(newHeight);
     }
-  }, []);
+  }, [list]);
+  return { height, listRef };
+}
 
-  useEffect(() => {
-    const newHeight = listRef.current && listRef.current.offsetHeight;
+const List = () => {
+  const { taskList } = useContext(TaskListContext);
+  const { height, listRef } = useHeight(taskList);
 
-    if (newHeight && newHeight !== height) {
-      setHeight(newHeight);
-    }
-  }, [props.taskList]);
-
-  const { taskList = [] } = props;
+  const taskListMemo = useMemo(() => {
+    return taskList.map(({ text, id, isCompleted }) => (
+      <Task key={id} id={id} isCompleted={isCompleted}>
+        {text}
+      </Task>
+    ));
+  }, [taskList]);
 
   return (
     <StyledList ref={listRef}>
-      {taskList.map(({ text, id }) => (
-        <Task
-          key={id}
-          onDelete={props.removeTask}
-          onSave={props.addTask}
-          id={id}
-        >
-          {text}
-        </Task>
-      ))}
-
+      {taskListMemo}
       <StyledHeight>List height: {height} px</StyledHeight>
     </StyledList>
   );
 };
 
-export default (componentProps) => (
-  <TaskListConsumer>
-    {(props) => <List {...props} {...componentProps} />}
-  </TaskListConsumer>
-);
+export default List;
